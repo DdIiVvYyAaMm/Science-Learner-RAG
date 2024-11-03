@@ -1,0 +1,150 @@
+<!-- welcome.html -->
+{% extends "a2chatbot/base.html" %}
+
+{% load static %}
+
+{% block user-info %}
+<div style="color:white; font-size: 18px; padding-top: 5pt; padding-right: 5pt;">{{ user.username }}</div>
+{% endblock %}
+
+{% block content %}
+<label for="interaction-mode">Select Interaction Mode:</label>
+<select id="interaction-mode">
+    <option value="tutor_asks" {% if interaction_mode == 'tutor_asks' %}selected{% endif %}>Tutor Asks Questions</option>
+    <option value="student_asks" {% if interaction_mode == 'student_asks' %}selected{% endif %}>Student Asks Questions</option>
+</select>
+
+<div class="chat-container">
+    <div id="chatBox" class="chat-box">
+        <!-- Chat messages will appear here -->
+        {% for message in messages %}
+            <div class="message {{ message.sender }}">
+                <p>{{ message.content }}</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Display the list of questions if in 'tutor_asks' mode -->
+    {% if interaction_mode == 'tutor_asks' %}
+        <h3>Select a question:</h3>
+        <ul>
+            {% for q in questions %}
+                <li><a href="#" class="question-link">{{ q }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div class="input-container">
+        <input type="text" id="userInput" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    <button id="end-conversation">End Conversation</button>
+</div>
+
+<script type="text/javascript">
+    // Function to send the user's message
+    function sendMessage() {
+        const inputField = document.getElementById('userInput');
+        const message = inputField.value;
+        const token = getCSRFToken();
+        if (message.trim() === "") return;
+
+        // Append user message
+        appendMessage('user', message);
+        // Clear input field
+        inputField.value = '';
+
+        $.ajax({
+            url: "{% url 'sendmessage' %}",
+            type: "POST",
+            data: {
+                "message": message,
+                "csrfmiddlewaretoken": token,
+            },
+            dataType: "json",
+            success: function(response) {
+                appendMessage('assistant', response[0].bot_message);
+            }
+        });
+    }
+
+    // Function to append messages to the chat
+    function appendMessage(sender, message) {
+        const chatBox = document.getElementById('chatBox');
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message', sender);
+        messageElement.innerHTML = `<p>${message}</p>`;
+
+        chatBox.appendChild(messageElement);
+
+        // Scroll to the latest message
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Add event listener to question links
+    document.querySelectorAll('.question-link').forEach(function(element) {
+        element.addEventListener('click', function(event) {
+            event.preventDefault();
+            const question = this.textContent;
+            const token = getCSRFToken();
+
+            // Send AJAX request to ask the question
+            $.ajax({
+                url: "{% url 'ask_question' %}",
+                type: "POST",
+                data: {
+                    "question": question,
+                    "csrfmiddlewaretoken": token,
+                },
+                dataType: "json",
+                success: function(response) {
+                    // Append assistant's message (the question)
+                    appendMessage('assistant', response.bot_message);
+                }
+            });
+        });
+    });
+
+    // Function to get CSRF token
+    function getCSRFToken() {
+        var cookies = document.cookie.split(";");
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.startsWith("csrftoken=")) {
+                return cookie.substring("csrftoken=".length, cookie.length);
+            }
+        }
+        return "unknown";
+    }
+
+    // End conversation event
+    document.getElementById('end-conversation').addEventListener('click', function() {
+        fetch("{% url 'end_conversation' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        }).then(response => {
+            if (response.ok) {
+                window.location.href = "{% url 'home' %}";
+            }
+        });
+    });
+    document.getElementById('interaction-mode').addEventListener('change', function() {
+        const mode = this.value;
+        fetch("{% url 'set_interaction_mode' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 'mode': mode })
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            }
+        });
+    });
+</script>
+
+{% endblock %}
