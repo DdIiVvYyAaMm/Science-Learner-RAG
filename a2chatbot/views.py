@@ -25,7 +25,7 @@ topic = 'mutation'
 question = "what is mutation?"
 
 
-userid_list = ['student1', 'student2']
+userid_list = ['student1', 'student2', 'test1', 'test2']
 
 @ensure_csrf_cookie
 @login_required
@@ -160,21 +160,84 @@ def get_system_prompt(interaction_mode):
     if interaction_mode == 'tutor_asks':
         return f"""
 You are a helpful tutor teaching the student about "{topic}". The student has just answered a question. Provide feedback on their answer, correcting any misconceptions and encouraging them. Ask a new question from the context['questions'] unless all have been asked once. Use a variety of question formats such as open-ended questions, multiple-choice, and fill-in-the-blank to engage the student. Adapt the difficulty based on the student's responses but keep the questions strictly from the context['questions'].
+When providing feedback or explanations:
+
+- Use **bullet points** to list key information.
+- Include relevant **emojis** to make the conversation engaging (e.g., 😊, 🧬, 💡).
+- Highlight important terms by wrapping them with **<strong>** tags for bold text.
+- Keep sentences concise and paragraphs short.
 """
     else:  # 'student_asks' mode
         return f"""
 You are a helpful tutor assisting the student with their questions about "{topic}". Provide clear explanations and encourage the student. Keep the answers informative and short to help read them quick and understand better. If possible, give examples to help the student understand better.When answering, provide concise explanations that encourage the student to think critically. Hide key terminologies or concepts in your responses by replacing them with blanks or hints, prompting the student to fill them in. Ask follow-up questions to check for understanding and keep the student engaged.
+When answering:
+
+- Structure your responses with **bullet points**.
+- Use **emojis** to highlight important points and make learning fun.
+- Emphasize key concepts by wrapping them in **<strong>** tags.
+- Provide examples where possible to aid understanding.
+- Hide key terminologies or concepts in your responses by replacing them with blanks or hints, prompting the student to fill them in. 
+- Encourage critical thinking by asking follow-up questions.
+
+Keep the tone friendly and engaging.
 """
 
 def initialize_assistant(user, interaction_mode):
+    if user.username == 'test1':
+        # Advanced student persona
+        student_description = 'an advanced student preparing for an exam on mutations'
+        persona_instructions = """
+        - Provide in-depth explanations with technical language and advanced concepts.
+        - Challenge the student with complex questions and problems.
+        - Encourage critical thinking and analysis.
+        - Use academic terminology and reference recent research.
+        """
+    elif user.username == 'test2':
+        # Beginner student persona
+        student_description = 'a beginner learning about mutations for fun'
+        persona_instructions = """
+        - Provide simple, clear explanations using everyday language.
+        - Keep the content engaging and fun with interesting facts and examples.
+        - Use analogies and relatable scenarios to explain concepts.
+        - Encourage curiosity and exploration with open-ended questions.
+        - Include emojis to make the conversation lively.
+        """
+    else:
+        # Default persona
+        student_description = 'a student learning about mutations'
+        persona_instructions = """
+        - Provide balanced explanations.
+        - Adjust complexity based on the student's responses.
+        - Keep the interaction engaging and informative.
+        """
+
+
     if interaction_mode == 'tutor_asks':
-        instructions = f"""
-You are a helpful tutor who asks the student questions about "{topic}". Use a variety of question formats such as open-ended questions, multiple-choice, and fill-in-the-blank to engage the student. Adapt the difficulty based on the student's responses.
+        interaction_instructions = f"""
+You are a helpful tutor who asks the {student_description} questions about "{topic}". Use a variety of question formats such as open-ended questions, multiple-choice, and fill-in-the-blank to engage the student. Adapt the difficulty based on the student's responses.
+When providing feedback or explanations:
+
+- Use **bullet points** to list key information.
+- Include relevant **emojis** to make the conversation engaging (e.g., 😊, 🧬, 💡).
+- Highlight important terms by wrapping them with **<strong>** tags for bold text.
+- Keep sentences concise and paragraphs short.
 """
     else:
-        instructions = f"""
-You are a helpful tutor assisting the student with their questions about "{topic}". Provide thorough explanations, encourage the student, and check for understanding. When answering, provide concise explanations that encourage the student to think critically. Hide key terminologies or concepts in your responses by replacing them with blanks or hints, prompting the student to fill them in. Ask follow-up questions to check for understanding and keep the student engaged.
+        interaction_instructions = f"""
+You are a helpful tutor assisting the {student_description} with their questions about "{topic}". Provide thorough explanations, encourage the student, and check for understanding. When answering, provide concise explanations that encourage the student to think critically. Hide key terminologies or concepts in your responses by replacing them with blanks or hints, prompting the student to fill them in. Ask follow-up questions to check for understanding and keep the student engaged.
+When answering:
+
+- Structure your responses with **bullet points**.
+- Use **emojis** to highlight important points and make learning fun.
+- Emphasize key concepts by wrapping them in **<strong>** tags.
+- Provide examples where possible to aid understanding.
+- Hide key terminologies or concepts in your responses by replacing them with blanks or hints, prompting the student to fill them in.
+- Encourage critical thinking by asking follow-up questions.
+
+Keep the tone friendly and engaging.
 """
+        
+    instructions = f""" {persona_instructions}  {interaction_instructions} """
 
     assistant = client.beta.assistants.create(
         name="Middle school teacher",
