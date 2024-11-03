@@ -154,13 +154,16 @@ These prompts were there combined with interaction mode prompts as follows: inst
 
 **When are mutations most likely to occur?**
 
-Test1 (advanced student):  Test2 (beginner, fun exploring student): 
+**Test1 (advanced student):**
 
-**Technical words  ![](Images/Aspose.Words.abc2508d-6d00-40d2-afc0-6f2560752b37.010.png)![](Images/Aspose.Words.abc2508d-6d00-40d2-afc0-6f2560752b37.011.png)![](Images/Aspose.Words.abc2508d-6d00-40d2-afc0-6f2560752b37.012.jpeg)![](Images/Aspose.Words.abc2508d-6d00-40d2-afc0-6f2560752b37.013.jpeg)![](Images/Aspose.Words.abc2508d-6d00-40d2-afc0-6f2560752b37.014.png) and descriptions**  
+ ![](Images/Aspose.Words.abc2508d-6d00-40d2-afc0-6f2560752b37.012.jpeg)
 
-||
-| :- |
-||
+ 
+
+**Test2 (beginner, fun exploring student):**
+ 
+ ![](Images/Aspose.Words.abc2508d-6d00-40d2-afc0-6f2560752b37.013.jpeg)
+
 **Some reflection questions:** 
 
 1. **Do you think the chatbot could help someone learn the content better? Why and why not?** 
